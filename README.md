@@ -12,7 +12,7 @@ The model then gives confidence rating for each of the parameters and then decid
 
 
 
-/h2 Scalability
+Scalability
 
 It can be used in the medical field - say, if we train the model with healthy cells, it can spot irregularity in cells and fish out any underlying causes or diseases way before it worsens. The only true limit is the budget. This project's POC has near 
 infinite scalability.
