@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leather Bag Quality Checker</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #0f0f0f, #1c1c1c);
+      color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(to right, #00ffcc, #00ffaa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 2rem;
+    }
+
+    .upload-section, .result-section {
+      background: #1a1a1a;
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 1rem 0;
+      width: 95%;
+      max-width: 850px;
+      box-shadow: 0 10px 30px rgba(0, 255, 200, 0.05);
+      transition: all 0.3s ease-in-out;
+    }
+
+    input[type="file"], select, button {
+      display: block;
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.8rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      background-color: #2b2b2b;
+      color: #fff;
+      border: 1px solid #444;
+    }
+
+    button {
+      background: linear-gradient(to right, #00ffcc, #00ffaa);
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: linear-gradient(to right, #00e6b8, #00e699);
+    }
+
+    .status {
+      font-size: 1.4rem;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    .pass {
+      color: #00ffaa;
+    }
+
+    .fail {
+      color: #ff5555;
+    }
+
+    .issues {
+      margin-top: 1rem;
+      list-style-type: disc;
+      color: #ff9999;
+      padding-left: 1.5rem;
+    }
+
+    img {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-top: 1.5rem;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+      transition: transform 0.3s;
+    }
+
+    img:hover {
+      transform: scale(1.01);
+    }
+
+    .detection-info {
+      margin-top: 1rem;
+      background-color: #2c2c2c;
+      padding: 1rem;
+      border-radius: 10px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .metric {
+      background-color: #262626;
+      padding: 1.2rem;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,255,204,0.03);
+    }
+
+    .metric-value {
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-top: 0.5rem;
+    }
+
+    .confidence-high {
+      color: #00ff99;
+    }
+
+    .confidence-medium {
+      color: #ffcc00;
+    }
+
+    .confidence-low {
+      color: #ff4444;
+    }
+
+    .loading {
+      display: none;
+      margin-top: 1rem;
+      font-weight: bold;
+      align-items: center;
+      color: #00ffcc;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(0, 255, 204, 0.3);
+      border-radius: 50%;
+      border-top-color: #00ffcc;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    label {
+      margin-top: 1rem;
+      display: inline-block;
+      font-weight: bold;
+      color: #dddddd;
+    }
+
+    h3 {
+      margin-top: 2rem;
+      border-bottom: 1px solid #444;
+      padding-bottom: 0.5rem;
+      color: #00ffaa;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Leather Bag Quality Checker</h1>
+
+  <div class="upload-section">
+    <label for="imageUpload">Upload Leather Bag Image:</label>
+    <input type="file" id="imageUpload" accept="image/*">
+
+    <label for="bagType">Select Bag Type:</label>
+    <select id="bagType">
+      <option value="black">Black</option>
+      </select>
+
+    <button onclick="analyzeImage()">Analyze</button>
+
+    <div class="loading" id="loadingIndicator">
+      <span class="spinner"></span> Analyzing image with YOLOv8...
+    </div>
+  </div>
+
+  <div class="result-section" id="resultContainer" style="display: none;">
+    <div class="status" id="statusText"></div>
+
+    <div class="detection-info" id="detectionInfo">
+      <h3>AI Detection Results</h3>
+      <div id="bagDetectionStatus"></div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div>Bag Confidence</div>
+        <div class="metric-value" id="confidenceValue">-</div>
+      </div>
+      <div class="metric">
+        <div>Leather Material</div>
+        <div class="metric-value" id="leatherValue">-</div>
+      </div>
+      <div class="metric">
+        <div>Defect Density</div>
+        <div class="metric-value" id="defectValue">-</div>
+      </div>
+    </div>
+
+    <h3>Issues Detected:</h3>
+    <ul class="issues" id="issuesList"></ul>
+
+    <h3>Analysis Results:</h3>
+    <img id="resultImage" alt="Result Preview"/>
+  </div>
+
+  <script>
+    async function analyzeImage() {
+      const fileInput = document.getElementById('imageUpload');
+      const bagType = document.getElementById('bagType').value; // This will always be "black" now
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Please upload an image first.");
+        return;
+      }
+
+      document.getElementById("loadingIndicator").style.display = "flex";
+      document.getElementById("resultContainer").style.display = "none";
+
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("bag_type", bagType);
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/analyze", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        document.getElementById("loadingIndicator").style.display = "none";
+        document.getElementById("resultContainer").style.display = "block";
+        document.getElementById("resultImage").src = data.annotated_image;
+
+        const statusText = document.getElementById("statusText");
+        statusText.textContent = `Overall Result: ${data.result.toUpperCase()}`;
+        statusText.className = `status ${data.result === "pass" ? "pass" : "fail"}`;
+
+        const bagDetectionStatus = document.getElementById("bagDetectionStatus");
+         // Update text to always refer to Black bag
+        bagDetectionStatus.innerHTML = data.bag_detected
+          ? `<strong>Black bag detected:</strong> (${(data.confidence * 100).toFixed(1)}% confidence)`
+          : "<strong>No bag detected</strong> in the image";
+
+
+        const confidenceValue = document.getElementById("confidenceValue");
+        confidenceValue.textContent = `${(data.confidence * 100).toFixed(1)}%`;
+        confidenceValue.className = "metric-value " + (
+          data.confidence > 0.8 ? "confidence-high" :
+          data.confidence > 0.5 ? "confidence-medium" : "confidence-low"
+        );
+
+        const leatherValue = document.getElementById("leatherValue");
+        leatherValue.textContent = `${data.leather_percentage.toFixed(1)}%`;
+        leatherValue.className = "metric-value " + (
+          data.leather_percentage > 15 ? "confidence-high" : "confidence-low"
+        );
+
+        const defectValue = document.getElementById("defectValue");
+        defectValue.textContent = `${data.defect_percentage.toFixed(1)}%`;
+        defectValue.className = "metric-value " + (
+          data.defect_percentage < 2 ? "confidence-high" : "confidence-low"
+        );
+
+        const issuesList = document.getElementById("issuesList");
+        issuesList.innerHTML = "";
+        if (data.issues.length === 0) {
+          issuesList.innerHTML = "<li>No issues detected</li>";
+        } else {
+          data.issues.forEach(issue => {
+            const li = document.createElement("li");
+            li.textContent = issue;
+            issuesList.appendChild(li);
+          });
+        }
+      } catch (error) {
+        document.getElementById("loadingIndicator").style.display = "none";
+        alert("Error analyzing image. Please make sure the server is running.");
+        console.error(error);
+      }
+    }
+  </script>
+
+</body>
+</html>
