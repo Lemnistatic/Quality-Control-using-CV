@@ -1,5 +1,5 @@
-#18-08-2025damn i just realised I didnt upload the backend file, my team has it let me get back to them and update the file. Sorry Joseph sir 😭
-#19-08-2025 I have updated it now, sorry for the delay!
+#18-08-2025 : damn i just realised I didnt upload the backend file, my team has it let me get back to them and update the file. Sorry Joseph sir 😭
+#19-08-2025 : I have updated it now, sorry for the delay!
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -168,4 +168,5 @@ async def analyze_bag(image: UploadFile = File(...)):
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
 
